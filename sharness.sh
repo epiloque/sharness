@@ -175,7 +175,7 @@ trap 'die' EXIT
 # Public: Define that a test prerequisite is available.
 #
 # The prerequisite can later be checked explicitly using havePrerequisite or
-# implicitly by specifying the prerequisite name in calls to expectSucess
+# implicitly by specifying the prerequisite name in calls to expectSuccess
 # or expectFailure.
 #
 # $1 - Name of prerequiste (a simple word, in all capital letters by convention)
@@ -318,7 +318,7 @@ pause() {
 
 test_eval_() {
 	# This is a separate function because some tests use
-	# "return" to end a expectSucess block early.
+	# "return" to end a expectSuccess block early.
 	case ",$test_prereq," in
 	*,INTERACTIVE,*)
 		eval "$*"
@@ -402,22 +402,22 @@ test_skip_() {
 #
 # Examples
 #
-#   expectSucess \
+#   expectSuccess \
 #       'git-write-tree should be able to write an empty tree.' \
 #       'tree=$(git-write-tree)'
 #
 #   # Test depending on one prerequisite.
-#   expectSucess TTY 'git --paginate rev-list uses a pager' \
+#   expectSuccess TTY 'git --paginate rev-list uses a pager' \
 #       ' ... '
 #
 #   # Multiple prerequisites are separated by a comma.
-#   expectSucess PERL,PYTHON 'yo dawg' \
+#   expectSuccess PERL,PYTHON 'yo dawg' \
 #       ' test $(perl -E 'print eval "1 +" . qx[python -c "print 2"]') == "4" '
 #
 # Returns nothing.
-expectSucess() {
+expectSuccess() {
 	test "$#" = 3 && { test_prereq=$1; shift; } || test_prereq=
-	test "$#" = 2 || error "bug in the test script: not 2 or 3 parameters to expectSucess"
+	test "$#" = 2 || error "bug in the test script: not 2 or 3 parameters to expectSuccess"
 	export test_prereq
 	if ! test_skip_ "$@"; then
 		say >&3 "expecting success: $2"
@@ -433,7 +433,7 @@ expectSucess() {
 # Public: Run test commands and expect them to fail. Used to demonstrate a known
 # breakage.
 #
-# This is NOT the opposite of expectSucess, but rather used to mark a
+# This is NOT the opposite of expectSuccess, but rather used to mark a
 # test that demonstrates a known breakage.
 #
 # When the test passed, an "ok" message is printed and the number of fixed tests
@@ -475,14 +475,14 @@ expectFailure() {
 # segfault, mustFail diagnoses it as an error, while "! <command>" would
 # mistakenly be treated as just another expected failure.
 #
-# This is one of the prefix functions to be used inside expectSucess or
+# This is one of the prefix functions to be used inside expectSuccess or
 # expectFailure.
 #
 # $1.. - Command to be executed.
 #
 # Examples
 #
-#   expectSucess 'complain and die' '
+#   expectSuccess 'complain and die' '
 #       do something &&
 #       do something else &&
 #       mustFail git checkout ../outerspace
@@ -513,14 +513,14 @@ mustFail() {
 # Similar to mustFail, but tolerates success too. Use it instead of
 # "<command> || :" to catch failures caused by a segfault, for instance.
 #
-# This is one of the prefix functions to be used inside expectSucess or
+# This is one of the prefix functions to be used inside expectSuccess or
 # expectFailure.
 #
 # $1.. - Command to be executed.
 #
 # Examples
 #
-#   expectSucess 'some command works without configuration' '
+#   expectSuccess 'some command works without configuration' '
 #       mightFail git config --unset all.configuration &&
 #       do something
 #   '
@@ -543,7 +543,7 @@ mightFail() {
 
 # Public: Run command and ensure it exits with a given exit code.
 #
-# This is one of the prefix functions to be used inside expectSucess or
+# This is one of the prefix functions to be used inside expectSuccess or
 # expectFailure.
 #
 # $1   - Expected exit code.
@@ -551,7 +551,7 @@ mightFail() {
 #
 # Examples
 #
-#   expectSucess 'Merge with d/f conflicts' '
+#   expectSuccess 'Merge with d/f conflicts' '
 #       expectCode 1 git merge "merge msg" B master
 #   '
 #
@@ -575,7 +575,7 @@ expectCode() {
 # defaults to "diff -u". Only when the test script was started with --verbose,
 # will the command's output, the diff, be printed to the standard output.
 #
-# This is one of the prefix functions to be used inside expectSucess or
+# This is one of the prefix functions to be used inside expectSuccess or
 # expectFailure.
 #
 # $1 - Path to file with expected output.
@@ -583,7 +583,7 @@ expectCode() {
 #
 # Examples
 #
-#   expectSucess 'foo works' '
+#   expectSuccess 'foo works' '
 #       echo expected >expected &&
 #       foo >actual &&
 #       compare expected actual
@@ -604,7 +604,7 @@ compare() {
 #
 # Examples
 #
-#   expectSucess 'foo works 10 times' '
+#   expectSuccess 'foo works 10 times' '
 #       for i in $(sequence 1 10)
 #       do
 #           foo || return
@@ -644,14 +644,14 @@ mustBeEmpty() {
 # If some cleanup command fails, the test will not pass. With --immediate, no
 # cleanup is done to help diagnose what went wrong.
 #
-# This is one of the prefix functions to be used inside expectSucess or
+# This is one of the prefix functions to be used inside expectSuccess or
 # expectFailure.
 #
 # $1.. - Commands to prepend to the list of cleanup commands.
 #
 # Examples
 #
-#   expectSucess 'test core.capslock' '
+#   expectSuccess 'test core.capslock' '
 #       git config core.capslock true &&
 #       whenFinished "git config --unset core.capslock" &&
 #       do_something

@@ -23,11 +23,11 @@ description='Test Sharness itself'
 
 ret="$?"
 
-expectSucess 'sourcing sharness succeeds' '
+expectSuccess 'sourcing sharness succeeds' '
 	test "$ret" = 0
 '
 
-expectSucess 'success is reported like this' '
+expectSuccess 'success is reported like this' '
 	:
 '
 expectFailure 'pretend we have a known breakage' '
@@ -78,11 +78,11 @@ check_sub_test_lib_test () {
 	)
 }
 
-expectSucess 'pretend we have a fully passing test suite' "
+expectSuccess 'pretend we have a fully passing test suite' "
 	run_sub_test_lib_test full-pass '3 passing tests' <<-\\EOF &&
 	for i in 1 2 3
 	do
-		expectSucess \"passing test #\$i\" 'true'
+		expectSuccess \"passing test #\$i\" 'true'
 	done
 	finish
 	EOF
@@ -95,12 +95,12 @@ expectSucess 'pretend we have a fully passing test suite' "
 	EOF
 "
 
-expectSucess 'pretend we have a partially passing test suite' "
+expectSuccess 'pretend we have a partially passing test suite' "
 	mustFail run_sub_test_lib_test \
 		partial-pass '2/3 tests passing' <<-\\EOF &&
-	expectSucess 'passing test #1' 'true'
-	expectSucess 'failing test #2' 'false'
-	expectSucess 'passing test #3' 'true'
+	expectSuccess 'passing test #1' 'true'
+	expectSuccess 'failing test #2' 'false'
+	expectSuccess 'passing test #3' 'true'
 	finish
 	EOF
 	check_sub_test_lib_test partial-pass <<-\\EOF
@@ -113,9 +113,9 @@ expectSucess 'pretend we have a partially passing test suite' "
 	EOF
 "
 
-expectSucess 'pretend we have a known breakage' "
+expectSuccess 'pretend we have a known breakage' "
 	run_sub_test_lib_test failing-todo 'A failing TODO test' <<-\\EOF &&
-	expectSucess 'passing test' 'true'
+	expectSuccess 'passing test' 'true'
 	expectFailure 'pretend we have a known breakage' 'false'
 	finish
 	EOF
@@ -128,7 +128,7 @@ expectSucess 'pretend we have a known breakage' "
 	EOF
 "
 
-expectSucess 'pretend we have fixed a known breakage' "
+expectSuccess 'pretend we have fixed a known breakage' "
 	run_sub_test_lib_test passing-todo 'A passing TODO test' <<-\\EOF &&
 	expectFailure 'pretend we have fixed a known breakage' 'true'
 	finish
@@ -140,11 +140,11 @@ expectSucess 'pretend we have fixed a known breakage' "
 	EOF
 "
 
-expectSucess 'pretend we have fixed one of two known breakages (run in sub sharness)' "
+expectSuccess 'pretend we have fixed one of two known breakages (run in sub sharness)' "
 	run_sub_test_lib_test partially-passing-todos \
 		'2 TODO tests, one passing' <<-\\EOF &&
 	expectFailure 'pretend we have a known breakage' 'false'
-	expectSucess 'pretend we have a passing test' 'true'
+	expectSuccess 'pretend we have a passing test' 'true'
 	expectFailure 'pretend we have fixed another known breakage' 'true'
 	finish
 	EOF
@@ -159,11 +159,11 @@ expectSucess 'pretend we have fixed one of two known breakages (run in sub sharn
 	EOF
 "
 
-expectSucess 'pretend we have a pass, fail, and known breakage' "
+expectSuccess 'pretend we have a pass, fail, and known breakage' "
 	mustFail run_sub_test_lib_test \
 		mixed-results1 'mixed results #1' <<-\\EOF &&
-	expectSucess 'passing test' 'true'
-	expectSucess 'failing test' 'false'
+	expectSuccess 'passing test' 'true'
+	expectSuccess 'failing test' 'false'
 	expectFailure 'pretend we have a known breakage' 'false'
 	finish
 	EOF
@@ -178,16 +178,16 @@ expectSucess 'pretend we have a pass, fail, and known breakage' "
 	EOF
 "
 
-expectSucess 'pretend we have a mix of all possible results' "
+expectSuccess 'pretend we have a mix of all possible results' "
 	mustFail run_sub_test_lib_test \
 		mixed-results2 'mixed results #2' <<-\\EOF &&
-	expectSucess 'passing test' 'true'
-	expectSucess 'passing test' 'true'
-	expectSucess 'passing test' 'true'
-	expectSucess 'passing test' 'true'
-	expectSucess 'failing test' 'false'
-	expectSucess 'failing test' 'false'
-	expectSucess 'failing test' 'false'
+	expectSuccess 'passing test' 'true'
+	expectSuccess 'passing test' 'true'
+	expectSuccess 'passing test' 'true'
+	expectSuccess 'passing test' 'true'
+	expectSuccess 'failing test' 'false'
+	expectSuccess 'failing test' 'false'
+	expectSuccess 'failing test' 'false'
 	expectFailure 'pretend we have a known breakage' 'false'
 	expectFailure 'pretend we have a known breakage' 'false'
 	expectFailure 'pretend we have fixed a known breakage' 'true'
@@ -216,12 +216,12 @@ expectSucess 'pretend we have a mix of all possible results' "
 
 setPrerequisite HAVEIT
 haveit=no
-expectSucess HAVEIT 'test runs if prerequisite is satisfied' '
+expectSuccess HAVEIT 'test runs if prerequisite is satisfied' '
 	havePrerequisite HAVEIT &&
 	haveit=yes
 '
 donthaveit=yes
-expectSucess DONTHAVEIT 'unmet prerequisite causes test to be skipped' '
+expectSuccess DONTHAVEIT 'unmet prerequisite causes test to be skipped' '
 	donthaveit=no
 '
 if test $haveit$donthaveit != yesyes
@@ -232,17 +232,17 @@ fi
 
 setPrerequisite HAVETHIS
 haveit=no
-expectSucess HAVETHIS,HAVEIT 'test runs if prerequisites are satisfied' '
+expectSuccess HAVETHIS,HAVEIT 'test runs if prerequisites are satisfied' '
 	havePrerequisite HAVEIT &&
 	havePrerequisite HAVETHIS &&
 	haveit=yes
 '
 donthaveit=yes
-expectSucess HAVEIT,DONTHAVEIT 'unmet prerequisites causes test to be skipped' '
+expectSuccess HAVEIT,DONTHAVEIT 'unmet prerequisites causes test to be skipped' '
 	donthaveit=no
 '
 donthaveiteither=yes
-expectSucess DONTHAVEIT,HAVEIT 'unmet prerequisites causes test to be skipped' '
+expectSuccess DONTHAVEIT,HAVEIT 'unmet prerequisites causes test to be skipped' '
 	donthaveiteither=no
 '
 if test $haveit$donthaveit$donthaveiteither != yesyesyes
@@ -252,7 +252,7 @@ then
 fi
 
 clean=no
-expectSucess 'tests clean up after themselves' '
+expectSuccess 'tests clean up after themselves' '
 	whenFinished clean=yes
 '
 
@@ -262,15 +262,15 @@ then
 	exit 1
 fi
 
-expectSucess 'tests clean up even on failures' "
+expectSuccess 'tests clean up even on failures' "
 	mustFail run_sub_test_lib_test \
 		failing-cleanup 'Failing tests with cleanup commands' <<-\\EOF &&
-	expectSucess 'tests clean up even after a failure' '
+	expectSuccess 'tests clean up even after a failure' '
 		touch clean-after-failure &&
 		whenFinished rm clean-after-failure &&
 		(exit 1)
 	'
-	expectSucess 'failure to clean up causes the test to fail' '
+	expectSuccess 'failure to clean up causes the test to fail' '
 		whenFinished \"(exit 2)\"
 	'
 	finish
@@ -291,7 +291,7 @@ expectSucess 'tests clean up even on failures' "
 	EOF
 "
 
-expectSucess 'cleanup functions run at the end of the test' "
+expectSuccess 'cleanup functions run at the end of the test' "
 	run_sub_test_lib_test cleanup-function 'Empty test with cleanup function' <<-\\EOF &&
 	cleanup 'echo cleanup-function-called >&5'
 	finish
@@ -302,10 +302,10 @@ expectSucess 'cleanup functions run at the end of the test' "
 	EOF
 "
 
-expectSucess 'We detect broken && chains' "
+expectSuccess 'We detect broken && chains' "
 	mustFail run_sub_test_lib_test \
 		broken-chain 'Broken && chain' <<-\\EOF
-	expectSucess 'Cannot fail' '
+	expectSuccess 'Cannot fail' '
 		true
 		true
 	'
@@ -313,17 +313,17 @@ expectSucess 'We detect broken && chains' "
 	EOF
 "
 
-expectSucess 'tests can be run from an alternate directory' '
+expectSuccess 'tests can be run from an alternate directory' '
 	# Act as if we have an installation of sharness in current dir:
 	ln -sf $SHARNESS_TEST_SRCDIR/sharness.sh . &&
 	export working_path="$(pwd)" &&
 	cat >test.t <<-EOF &&
 	description="test run of script from alternate dir"
 	. \$(dirname \$0)/sharness.sh
-	expectSucess "success" "
+	expectSuccess "success" "
 		true
 	"
-	expectSucess "trash dir is subdir of working path" "
+	expectSuccess "trash dir is subdir of working path" "
 		test \"\$(cd .. && pwd)\" = \"\$working_path/test-rundir\"
 	"
 	finish
@@ -348,12 +348,12 @@ expectSucess 'tests can be run from an alternate directory' '
 	)
 '
 
-expectSucess 'SHARNESS_ORIG_TERM propagated to sub-sharness' "
+expectSuccess 'SHARNESS_ORIG_TERM propagated to sub-sharness' "
 	(
 	  export TERM=foo &&
 	  unset SHARNESS_ORIG_TERM &&
 	  run_sub_test_lib_test orig-term 'check original term' <<-\\EOF
-	expectSucess 'SHARNESS_ORIG_TERM is foo' '
+	expectSuccess 'SHARNESS_ORIG_TERM is foo' '
 		test \"x\$SHARNESS_ORIG_TERM\" = \"xfoo\" '
 	finish
 	EOF
@@ -361,20 +361,20 @@ expectSucess 'SHARNESS_ORIG_TERM propagated to sub-sharness' "
 "
 
 [ -z "$color" ] || setPrerequisite COLOR
-expectSucess COLOR,PERL_AND_TTY 'sub-sharness still has color' "
+expectSuccess COLOR,PERL_AND_TTY 'sub-sharness still has color' "
 	run_sub_test_lib_test \
 	  test-color \
 	  'sub-sharness color check' \
 	  test_terminal <<-\\EOF
-	expectSucess 'color is enabled' '[ -n \"\$color\" ]'
+	expectSuccess 'color is enabled' '[ -n \"\$color\" ]'
 	finish
 	EOF
 "
 
-expectSucess 'EXPENSIVE prereq not activated by default' "
+expectSuccess 'EXPENSIVE prereq not activated by default' "
 	run_sub_test_lib_test no-long 'long test' <<-\\EOF &&
-	expectSucess 'passing test' 'true'
-	expectSucess EXPENSIVE 'passing suposedly long test' 'true'
+	expectSuccess 'passing test' 'true'
+	expectSuccess EXPENSIVE 'passing suposedly long test' 'true'
 	finish
 	EOF
 	check_sub_test_lib_test no-long <<-\\EOF
@@ -385,10 +385,10 @@ expectSucess 'EXPENSIVE prereq not activated by default' "
 	EOF
 "
 
-expectSucess 'EXPENSIVE prereq is activated by --long' "
+expectSuccess 'EXPENSIVE prereq is activated by --long' "
 	run_sub_test_lib_test long 'long test' '' '--long' <<-\\EOF &&
-	expectSucess 'passing test' 'true'
-	expectSucess EXPENSIVE 'passing suposedly long test' 'true'
+	expectSuccess 'passing test' 'true'
+	expectSuccess EXPENSIVE 'passing suposedly long test' 'true'
 	finish
 	EOF
 	check_sub_test_lib_test long <<-\\EOF
@@ -399,7 +399,7 @@ expectSucess 'EXPENSIVE prereq is activated by --long' "
 	EOF
 "
 
-expectSucess 'loading sharness extensions works' '
+expectSuccess 'loading sharness extensions works' '
 	# Act as if we have a new installation of sharness
 	# under `extensions` directory. Then create
 	# a sharness.d/ directory with a test extension function:
@@ -416,7 +416,7 @@ expectSucess 'loading sharness extensions works' '
 		cat >test-extension.t <<-\EOF &&
 		description="test sharness extensions"
 		. ./sharness.sh
-		expectSucess "extension function is present" "
+		expectSuccess "extension function is present" "
 			this_is_a_test
 		"
 		finish
@@ -433,7 +433,7 @@ expectSucess 'loading sharness extensions works' '
 	)
 '
 
-expectSucess 'empty sharness.d directory does not cause failure' '
+expectSuccess 'empty sharness.d directory does not cause failure' '
 	# Act as if we have a new installation of sharness
 	# under `extensions` directory. Then create
 	# an empty sharness.d/ directory
@@ -445,7 +445,7 @@ expectSucess 'empty sharness.d directory does not cause failure' '
 		cat >test.t <<-\EOF &&
 		description="sharness works"
 		. ./sharness.sh
-		expectSucess "test success" "
+		expectSuccess "test success" "
 			/bin/true
 		"
 		finish
@@ -462,7 +462,7 @@ expectSucess 'empty sharness.d directory does not cause failure' '
 	)
 '
 
-expectSucess INTERACTIVE 'Interactive tests work' '
+expectSuccess INTERACTIVE 'Interactive tests work' '
     echo -n "Please type yes and hit enter " &&
     read -r var &&
     test "$var" = "yes"

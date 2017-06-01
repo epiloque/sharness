@@ -4,11 +4,11 @@ description="Show basic features of Sharness"
 
 . ./sharness.sh
 
-expectSucess "Success is reported like this" "
+expectSuccess "Success is reported like this" "
     echo hello world | grep hello
 "
 
-expectSucess "Commands are chained this way" "
+expectSuccess "Commands are chained this way" "
     test x = 'x' &&
     test 2 -gt 1 &&
     echo success
@@ -19,7 +19,7 @@ return_42() {
     return 42
 }
 
-expectSucess "You can test for a specific exit code" "
+expectSuccess "You can test for a specific exit code" "
     expectCode 42 return_42
 "
 

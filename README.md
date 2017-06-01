@@ -20,11 +20,11 @@ description="Show basic features of Sharness"
 
 . ./sharness.sh
 
-expectSucess "Success is reported like this" "
+expectSuccess "Success is reported like this" "
     echo hello world | grep hello
 "
 
-expectSucess "Commands are chained this way" "
+expectSuccess "Commands are chained this way" "
     test x = 'x' &&
     test 2 -gt 1 &&
     echo success
@@ -35,7 +35,7 @@ return_42() {
     return 42
 }
 
-expectSucess "You can test for a specific exit code" "
+expectSuccess "You can test for a specific exit code" "
     expectCode 42 return_42
 "
 
@@ -74,7 +74,7 @@ Alternatively, you can run the test through [prove(1)]&#x3A;
     -   [havePrerequisite()](#haveprerequisite)
     -   [debug()](#debug)
     -   [pause()](#pause)
-    -   [expectSucess()](#expectsucess)
+    -   [expectSuccess()](#expectsucess)
     -   [expectFailure()](#expectfailure)
     -   [mustFail()](#mustfail)
     -   [mightFail()](#mightfail)
@@ -103,7 +103,7 @@ Public: The unsanitized TERM under which sharness is originally run
 
 Public: Define that a test prerequisite is available.
 
-The prerequisite can later be checked explicitly using havePrerequisite or implicitly by specifying the prerequisite name in calls to expectSucess or expectFailure.
+The prerequisite can later be checked explicitly using havePrerequisite or implicitly by specifying the prerequisite name in calls to expectSuccess or expectFailure.
 
 -   $1 - Name of prerequiste (a simple word, in all capital letters by convention)
 
@@ -155,7 +155,7 @@ Public: Stop execution and start a shell.
 
 This is useful for debugging tests and only makes sense together with “-v”. Be sure to remove all invocations of this command before submitting.
 
-### `expectSucess()`
+### `expectSuccess()`
 
 Public: Run test commands and expect them to succeed.
 
@@ -176,16 +176,16 @@ With three arguments, the first will be taken to be a prerequisite:
 
 Examples
 
-    expectSucess \
+    expectSuccess \
         'git-write-tree should be able to write an empty tree.' \
         'tree=$(git-write-tree)'
 
     # Test depending on one prerequisite.
-    expectSucess TTY 'git --paginate rev-list uses a pager' \
+    expectSuccess TTY 'git --paginate rev-list uses a pager' \
         ' ... '
 
     # Multiple prerequisites are separated by a comma.
-    expectSucess PERL,PYTHON 'yo dawg' \
+    expectSuccess PERL,PYTHON 'yo dawg' \
         ' test $(perl -E 'print eval "1 +" . qx[python -c "print 2"]') == "4" '
 
 Returns nothing.
@@ -194,7 +194,7 @@ Returns nothing.
 
 Public: Run test commands and expect them to fail. Used to demonstrate a known breakage.
 
-This is NOT the opposite of expectSucess, but rather used to mark a test that demonstrates a known breakage.
+This is NOT the opposite of expectSuccess, but rather used to mark a test that demonstrates a known breakage.
 
 When the test passed, an “ok” message is printed and the number of fixed tests is incremented. When it failed, a “not ok” message is printed and the number of tests still broken is incremented.
 
@@ -219,13 +219,13 @@ Public: Run command and ensure that it fails in a controlled way.
 
 Use it instead of "! <command>". For example, when <command> dies due to a segfault, mustFail diagnoses it as an error, while "! <command>" would mistakenly be treated as just another expected failure.
 
-This is one of the prefix functions to be used inside expectSucess or expectFailure.
+This is one of the prefix functions to be used inside expectSuccess or expectFailure.
 
 -   $1.. - Command to be executed.
 
 Examples
 
-    expectSucess 'complain and die' '
+    expectSuccess 'complain and die' '
         do something &&
         do something else &&
         mustFail git checkout ../outerspace
@@ -239,13 +239,13 @@ Public: Run command and ensure that it succeeds or fails in a controlled way.
 
 Similar to mustFail, but tolerates success too. Use it instead of "<command> || :" to catch failures caused by a segfault, for instance.
 
-This is one of the prefix functions to be used inside expectSucess or expectFailure.
+This is one of the prefix functions to be used inside expectSuccess or expectFailure.
 
 -   $1.. - Command to be executed.
 
 Examples
 
-    expectSucess 'some command works without configuration' '
+    expectSuccess 'some command works without configuration' '
         mightFail git config --unset all.configuration &&
         do something
     '
@@ -256,14 +256,14 @@ Returns 1 if the command died by signal (exit codes 130–192) Returns 1 if the 
 
 Public: Run command and ensure it exits with a given exit code.
 
-This is one of the prefix functions to be used inside expectSucess or expectFailure.
+This is one of the prefix functions to be used inside expectSuccess or expectFailure.
 
 -   $1 - Expected exit code.
 -   $2.. - Command to be executed.
 
 Examples
 
-    expectSucess 'Merge with d/f conflicts' '
+    expectSuccess 'Merge with d/f conflicts' '
         expectCode 1 git merge "merge msg" B master
     '
 
@@ -275,14 +275,14 @@ Public: Compare two files to see if expected output matches actual output.
 
 The TEST_CMP variable defines the command used for the comparision; it defaults to “diff -u”. Only when the test script was started with —verbose, will the command’s output, the diff, be printed to the standard output.
 
-This is one of the prefix functions to be used inside expectSucess or expectFailure.
+This is one of the prefix functions to be used inside expectSuccess or expectFailure.
 
 -   $1 - Path to file with expected output.
 -   $2 - Path to file with actual output.
 
 Examples
 
-    expectSucess 'foo works' '
+    expectSuccess 'foo works' '
         echo expected >expected &&
         foo >actual &&
         compare expected actual
@@ -304,13 +304,13 @@ Public: Schedule cleanup commands to be run unconditionally at the end of a test
 
 If some cleanup command fails, the test will not pass. With —immediate, no cleanup is done to help diagnose what went wrong.
 
-This is one of the prefix functions to be used inside expectSucess or expectFailure.
+This is one of the prefix functions to be used inside expectSuccess or expectFailure.
 
 -   $1.. - Commands to prepend to the list of cleanup commands.
 
 Examples
 
-    expectSucess 'test core.capslock' '
+    expectSuccess 'test core.capslock' '
         git config core.capslock true &&
         whenFinished "git config --unset core.capslock" &&
         do_something
