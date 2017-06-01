@@ -7,33 +7,6 @@
 
 # sharness
 
-## Table of Contents
-
--   [Introduction](#introduction)
--   [API](#api)
-    -   [SHARNESS_VERSION](#sharness_version)
-    -   [SHARNESS_ORIG_TERM](#sharness_orig_term)
-    -   [setPrerequisite()](#setprerequisite)
-    -   [havePrerequisite()](#haveprerequisite)
-    -   [debug()](#debug)
-    -   [pause()](#pause)
-    -   [expectSucess()](#expectsucess)
-    -   [expectFailure()](#expectfailure)
-    -   [mustFail()](#mustfail)
-    -   [mightFail()](#mightfail)
-    -   [expectCode()](#expectcode)
-    -   [compare()](#compare)
-    -   [mustBeEmpty()](#mustbeempty)
-    -   [whenFinished()](#whenfinished)
-    -   [cleanup](#cleanup)
-    -   [finish()](#finish)
-    -   [SHARNESS_TEST_FILE](#sharness_test_file)
-    -   [SHARNESS_TRASH_DIRECTORY](#sharness_trash_directory)
--   [Thanks](#thanks)
--   [License](#license)
-
-## Introduction
-
 Sharness is a portable shell library to write, run, and analyze automated tests
 for Unix programs. Since all tests output TAP, the [Test Anything Protocol],
 they can be run with any TAP harness.
@@ -92,7 +65,29 @@ Alternatively, you can run the test through [prove(1)]&#x3A;
     Files=1, Tests=4,  0 wallclock secs ( 0.02 usr +  0.00 sys =  0.02 CPU)
     Result: PASS
 
-Sharness was derived from the [Git] project.
+## Table of Contents
+
+-   [API](#api)
+    -   [SHARNESS_VERSION](#sharness_version)
+    -   [SHARNESS_ORIG_TERM](#sharness_orig_term)
+    -   [setPrerequisite()](#setprerequisite)
+    -   [havePrerequisite()](#haveprerequisite)
+    -   [debug()](#debug)
+    -   [pause()](#pause)
+    -   [expectSucess()](#expectsucess)
+    -   [expectFailure()](#expectfailure)
+    -   [mustFail()](#mustfail)
+    -   [mightFail()](#mightfail)
+    -   [expectCode()](#expectcode)
+    -   [compare()](#compare)
+    -   [mustBeEmpty()](#mustbeempty)
+    -   [whenFinished()](#whenfinished)
+    -   [cleanup](#cleanup)
+    -   [finish()](#finish)
+    -   [SHARNESS_TEST_FILE](#sharness_test_file)
+    -   [SHARNESS_TRASH_DIRECTORY](#sharness_trash_directory)
+-   [Thanks](#thanks)
+-   [License](#license)
 
 ## API
 
@@ -366,8 +361,8 @@ Public: Empty trash directory, the test area, provided for each test. The HOME v
 
 ## Thanks
 
-Sharness was created in April 2011 and maintained until June 2016 by [Mathias
-Lafeldt][twitter]. The library is derived from the [Git project]'s test-lib.sh.
+Sharness was derived from the [Git] project and maintained until June 2016 by [Mathias
+Lafeldt][twitter]. The library is derived from the [Git] project's test-lib.sh.
 It is currently maintained by [Christian Couder][chriscool]. See [Github’s
 “contributors” page][contributors] for a list of developers. A complete list of
 authors should include Git contributors to test-lib.sh too.
@@ -379,7 +374,7 @@ sharness is licensed under the terms of the GNU General Public License version
 
 [chriscool]: https://github.com/chriscool
 
-[contributors]: https://github.com/chriscool/sharness/graphs/contributors
+[contributors]: https://github.com/epiloque/sharness/graphs/contributors
 
 [license]: https://github.com/epiloque/sharness/blob/master/LICENSE
 
