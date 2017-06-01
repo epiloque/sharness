@@ -1,4 +1,38 @@
-# Sharness
+<p align="right">
+    <a href="https://travis-ci.org/epiloque/sharness">
+        <img src="https://travis-ci.org/epiloque/sharness.svg?branch=master"
+             alt="build status">
+    </a>
+</p>
+
+# sharness
+
+## Table of Contents
+
+-   [Introduction](#introduction)
+-   [API](#api)
+    -   [SHARNESS_VERSION](#sharness_version)
+    -   [SHARNESS_ORIG_TERM](#sharness_orig_term)
+    -   [setPrerequisite()](#setprerequisite)
+    -   [havePrerequisite()](#haveprerequisite)
+    -   [debug()](#debug)
+    -   [pause()](#pause)
+    -   [expectSucess()](#expectsucess)
+    -   [expectFailure()](#expectfailure)
+    -   [mustFail()](#mustfail)
+    -   [mightFail()](#mightfail)
+    -   [expectCode()](#expectcode)
+    -   [compare()](#compare)
+    -   [mustBeEmpty()](#mustbeempty)
+    -   [whenFinished()](#whenfinished)
+    -   [cleanup](#cleanup)
+    -   [finish()](#finish)
+    -   [SHARNESS_TEST_FILE](#sharness_test_file)
+    -   [SHARNESS_TRASH_DIRECTORY](#sharness_trash_directory)
+-   [Thanks](#thanks)
+-   [License](#license)
+
+## Introduction
 
 Sharness is a portable shell library to write, run, and analyze automated tests
 for Unix programs. Since all tests output TAP, the [Test Anything Protocol],
@@ -9,15 +43,15 @@ Each test is written as a shell script, for example:
 ```sh
 #!/bin/sh
 
-test_description="Show basic features of Sharness"
+description="Show basic features of Sharness"
 
 . ./sharness.sh
 
-test_expect_success "Success is reported like this" "
+expectSucess "Success is reported like this" "
     echo hello world | grep hello
 "
 
-test_expect_success "Commands are chained this way" "
+expectSucess "Commands are chained this way" "
     test x = 'x' &&
     test 2 -gt 1 &&
     echo success
@@ -28,15 +62,15 @@ return_42() {
     return 42
 }
 
-test_expect_success "You can test for a specific exit code" "
-    test_expect_code 42 return_42
+expectSucess "You can test for a specific exit code" "
+    expectCode 42 return_42
 "
 
-test_expect_failure "We expect this to fail" "
+expectFailure "We expect this to fail" "
     test 1 = 2
 "
 
-test_done
+finish
 ```
 
 Running the above test script returns the following (TAP) output:
@@ -50,7 +84,7 @@ Running the above test script returns the following (TAP) output:
     # passed all remaining 3 test(s)
     1..4
 
-Alternatively, you can run the test through [prove(1)]:
+Alternatively, you can run the test through [prove(1)]&#x3A;
 
     $ prove simple.t
     simple.t .. ok
@@ -58,149 +92,301 @@ Alternatively, you can run the test through [prove(1)]:
     Files=1, Tests=4,  0 wallclock secs ( 0.02 usr +  0.00 sys =  0.02 CPU)
     Result: PASS
 
-Sharness was derived from the [Git] project - see [README.git] for the original
-documentation.
+Sharness was derived from the [Git] project.
 
-## Installation
+## API
 
-First, clone the Git repository:
+### `SHARNESS_VERSION`
 
-    $ git clone git://github.com/chriscool/sharness.git
+Public: Current version of Sharness.
 
-Then choose an installation method that works best for you:
+### `SHARNESS_ORIG_TERM`
 
-### Per-project installation
+Public: The unsanitized TERM under which sharness is originally run
 
-If you like to add Sharness to the sources of a project you want to use it for,
-simply copy the files `sharness.sh`, `aggregate-results.sh`, and `test/Makefile`
-to a folder named `test` inside that project.
+### `setPrerequisite()`
 
-Another way is to use [Sharnessify](https://github.com/chriscool/sharnessify).
+Public: Define that a test prerequisite is available.
 
-Alternatively, you can also add Sharness as a Git submodule to your project.
+The prerequisite can later be checked explicitly using havePrerequisite or implicitly by specifying the prerequisite name in calls to expectSucess or expectFailure.
 
-In per-project installation, Sharness will optionally load extensions from
-`sharness.d/*.sh` if a `sharness.d` directory is found in the same directory
-as `sharness.sh`. This allows per-project extensions and enhancements to
-be added to the test library without requiring modification of `sharness.sh`.
+-   $1 - Name of prerequiste (a simple word, in all capital letters by convention)
 
-### Per-user installation
+Examples
 
-    $ cd sharness
-    $ make install
+    # Set PYTHON prerequisite if interpreter is available.
+    command -v python >/dev/null && setPrerequisite PYTHON
 
-This will install Sharness to `$HOME/share/sharness`, and its documentation and
-examples to `$HOME/share/doc/sharness`.
+    # Set prerequisite depending on some variable.
+    test -z "$NO_GETTEXT" && setPrerequisite GETTEXT
 
-### System-wide installation
+Returns nothing.
 
-    $ cd sharness
-    # make install prefix=/usr/local
+### `havePrerequisite()`
 
-This will install Sharness to `/usr/local/share/sharness`, and its documentation
-and examples to `/usr/local/share/doc/sharness`.
+Public: Check if one or more test prerequisites are defined.
 
-Of course, you can change the _prefix_ parameter to install Sharness to any
-other location.
+The prerequisites must have previously been set with setPrerequisite. The most common use of this is to skip all the tests if some essential prerequisite is missing.
 
-### Installation via Chef
+-   $1 - Comma-separated list of test prerequisites.
 
-If you want to install Sharness with Opscode Chef, the [Sharness cookbook] is
-for you.
+Examples
 
-## Usage
+    # Skip all remaining tests if prerequisite is not set.
+    if ! havePrerequisite PERL; then
+        skipAll='skipping perl interface tests, perl not available'
+        done
+    fi
 
-The following files are essential to using Sharness:
+Returns 0 if all prerequisites are defined or 1 otherwise.
 
-* `sharness.sh` - core shell library providing test functionality, see separate
-   [API documentation]. Meant to be sourced from test scripts, but not executed.
-* `aggregate-results.sh` - helper script to aggregate test results
-* `test/Makefile` - test driver. The default target runs the complete testsuite.
+### `debug()`
 
-To learn how to write and run actual test scripts based on `sharness.sh`, please
-read [README.git] until I come up with more documentation myself.
+Public: Execute commands in debug mode.
 
-### Command-line options
+Takes a single argument and evaluates it only when the test script is started with —debug. This is primarily meant for use during the development of test scripts.
 
-The `*.t` test scripts have the following options (again, read
-[README.git] for details) :
+-   $1 - Commands to be executed.
 
-* `--debug`, `-d`: helps debugging
-* `--immediate`, `-i`: stop execution after the first failing test
-* `--long-tests`, `-l`: run tests marked with prereq EXPENSIVE
-* `--interactive-tests`: run tests marked with prereq INTERACTIVE
-* `--help`, `-h`: show test description
-* `--verbose`, `-v`: show additional debug output
-* `--quiet`, `-q`: show less output
-* `--chain-lint`/`--no-chain-lint`: check &&-chains in scripts
-* `--no-color`: don't color the output
-* `--root=<dir>`: create trash directories in `<dir>` instead of current directory.
+Examples
 
-## Projects using Sharness
+    debug "cat some_log_file"
 
-See how Sharness is used in real-world projects:
+Returns the exit code of the last command executed in debug mode or 0 otherwise.
 
-* [azuki](https://github.com/seveas/azuki/tree/master/test)
-* [cb2util](https://github.com/mlafeldt/cb2util/tree/master/test)
-* [dabba](https://github.com/eroullit/dabba/tree/master/dabba/test)
-* [git-integration](https://github.com/johnkeeping/git-integration/tree/master/t)
-* [git-multimail](https://github.com/git-multimail/git-multimail/tree/master/t)
-* [git-spindle](https://github.com/seveas/git-spindle/tree/master/test)
-* [git-svn-fast-import](https://github.com/satori/git-svn-fast-import/tree/master/t)
-* [go-ipfs](https://github.com/ipfs/go-ipfs/tree/master/test/sharness)
-* [go-multihash](https://github.com/jbenet/go-multihash/tree/master/test/sharness)
-* [ipfs-update](https://github.com/ipfs/ipfs-update/tree/master/sharness)
-* [rdd.py](https://github.com/mlafeldt/rdd.py/tree/master/test/integration)
-* [Sharness itself](/test)
-* [tomdoc.sh](https://github.com/mlafeldt/tomdoc.sh/tree/master/test)
+### `pause()`
 
-Furthermore, as Sharness was derived from Git, [Git's test suite](https://github.com/git/git/tree/master/t)
-is worth examining as well, especially if you're interested in managing a big
-number of tests.
+Public: Stop execution and start a shell.
 
-## Alternatives
+This is useful for debugging tests and only makes sense together with “-v”. Be sure to remove all invocations of this command before submitting.
 
-Here is a list of other shell testing libraries (sorted alphabetically):
+### `expectSucess()`
 
-* [Bats](https://github.com/sstephenson/bats)
-* [Cram](https://bitheap.org/cram)
-* [rnt](https://github.com/roman-neuhauser/rnt)
-* [roundup](https://github.com/bmizerany/roundup)
-* [shUnit2](https://code.google.com/p/shunit2/)
-* [shspec](https://github.com/shpec/shpec)
-* [testlib.sh](https://gist.github.com/3877539)
-* [ts](https://github.com/thinkerbot/ts)
+Public: Run test commands and expect them to succeed.
+
+When the test passed, an “ok” message is printed and the number of successful tests is incremented. When it failed, a “not ok” message is printed and the number of failed tests is incremented.
+
+With —immediate, exit test immediately upon the first failed test.
+
+Usually takes two arguments:
+
+-   $1 - Test description
+-   $2 - Commands to be executed.
+
+With three arguments, the first will be taken to be a prerequisite:
+
+-   $1 - Comma-separated list of test prerequisites. The test will be skipped if not all of the given prerequisites are set. To negate a prerequisite, put a “!” in front of it.
+-   $2 - Test description
+-   $3 - Commands to be executed.
+
+Examples
+
+    expectSucess \
+        'git-write-tree should be able to write an empty tree.' \
+        'tree=$(git-write-tree)'
+
+    # Test depending on one prerequisite.
+    expectSucess TTY 'git --paginate rev-list uses a pager' \
+        ' ... '
+
+    # Multiple prerequisites are separated by a comma.
+    expectSucess PERL,PYTHON 'yo dawg' \
+        ' test $(perl -E 'print eval "1 +" . qx[python -c "print 2"]') == "4" '
+
+Returns nothing.
+
+### `expectFailure()`
+
+Public: Run test commands and expect them to fail. Used to demonstrate a known breakage.
+
+This is NOT the opposite of expectSucess, but rather used to mark a test that demonstrates a known breakage.
+
+When the test passed, an “ok” message is printed and the number of fixed tests is incremented. When it failed, a “not ok” message is printed and the number of tests still broken is incremented.
+
+Failures from these tests won’t cause —immediate to stop.
+
+Usually takes two arguments:
+
+-   $1 - Test description
+-   $2 - Commands to be executed.
+
+With three arguments, the first will be taken to be a prerequisite:
+
+-   $1 - Comma-separated list of test prerequisites. The test will be skipped if not all of the given prerequisites are set. To negate a prerequisite, put a “!” in front of it.
+-   $2 - Test description
+-   $3 - Commands to be executed.
+
+Returns nothing.
+
+### `mustFail()`
+
+Public: Run command and ensure that it fails in a controlled way.
+
+Use it instead of "! <command>". For example, when <command> dies due to a segfault, mustFail diagnoses it as an error, while "! <command>" would mistakenly be treated as just another expected failure.
+
+This is one of the prefix functions to be used inside expectSucess or expectFailure.
+
+-   $1.. - Command to be executed.
+
+Examples
+
+    expectSucess 'complain and die' '
+        do something &&
+        do something else &&
+        mustFail git checkout ../outerspace
+    '
+
+Returns 1 if the command succeeded (exit code 0). Returns 1 if the command died by signal (exit codes 130–192) Returns 1 if the command could not be found (exit code 127). Returns 0 otherwise.
+
+### `mightFail()`
+
+Public: Run command and ensure that it succeeds or fails in a controlled way.
+
+Similar to mustFail, but tolerates success too. Use it instead of "<command> || :" to catch failures caused by a segfault, for instance.
+
+This is one of the prefix functions to be used inside expectSucess or expectFailure.
+
+-   $1.. - Command to be executed.
+
+Examples
+
+    expectSucess 'some command works without configuration' '
+        mightFail git config --unset all.configuration &&
+        do something
+    '
+
+Returns 1 if the command died by signal (exit codes 130–192) Returns 1 if the command could not be found (exit code 127). Returns 0 otherwise.
+
+### `expectCode()`
+
+Public: Run command and ensure it exits with a given exit code.
+
+This is one of the prefix functions to be used inside expectSucess or expectFailure.
+
+-   $1 - Expected exit code.
+-   $2.. - Command to be executed.
+
+Examples
+
+    expectSucess 'Merge with d/f conflicts' '
+        expectCode 1 git merge "merge msg" B master
+    '
+
+Returns 0 if the expected exit code is returned or 1 otherwise.
+
+### `compare()`
+
+Public: Compare two files to see if expected output matches actual output.
+
+The TEST_CMP variable defines the command used for the comparision; it defaults to “diff -u”. Only when the test script was started with —verbose, will the command’s output, the diff, be printed to the standard output.
+
+This is one of the prefix functions to be used inside expectSucess or expectFailure.
+
+-   $1 - Path to file with expected output.
+-   $2 - Path to file with actual output.
+
+Examples
+
+    expectSucess 'foo works' '
+        echo expected >expected &&
+        foo >actual &&
+        compare expected actual
+    '
+
+Returns the exit code of the command set by TEST_CMP.
+
+### `mustBeEmpty()`
+
+Public: Check if the file expected to be empty is indeed empty, and barfs otherwise.
+
+-   $1 - File to check for emptyness.
+
+Returns 0 if file is empty, 1 otherwise.
+
+### `whenFinished()`
+
+Public: Schedule cleanup commands to be run unconditionally at the end of a test.
+
+If some cleanup command fails, the test will not pass. With —immediate, no cleanup is done to help diagnose what went wrong.
+
+This is one of the prefix functions to be used inside expectSucess or expectFailure.
+
+-   $1.. - Commands to prepend to the list of cleanup commands.
+
+Examples
+
+    expectSucess 'test core.capslock' '
+        git config core.capslock true &&
+        whenFinished "git config --unset core.capslock" &&
+        do_something
+    '
+
+Returns the exit code of the last cleanup command executed.
+
+### `cleanup`
+
+Public: Schedule cleanup commands to be run unconditionally when all tests have run.
+
+This can be used to clean up things like test databases. It is not needed to clean up temporary files, as done already does that.
+
+Examples:
+
+    cleanup mysql -e "DROP DATABASE mytest"
+
+Returns the exit code of the last cleanup command executed.
+
+### `finish()`
+
+Public: Summarize test results and exit with an appropriate error code.
+
+Must be called at the end of each test script.
+
+Can also be used to stop tests early and skip all remaining tests. For this, set skipAll to a string explaining why the tests were skipped before calling finish.
+
+Examples
+
+    # Each test script must call done at the end.
+    done
+
+    # Skip all remaining tests if prerequisite is not set.
+    if ! havePrerequisite PERL; then
+        skipAll='skipping perl interface tests, perl not available'
+        done
+    fi
+
+Returns 0 if all tests passed or 1 if there was a failure.
+
+### `SHARNESS_TEST_FILE`
+
+Public: Path to test script currently executed.
+
+### `SHARNESS_TRASH_DIRECTORY`
+
+Public: Empty trash directory, the test area, provided for each test. The HOME variable is set to that directory too.
+
+## Thanks
+
+Sharness was created in April 2011 and maintained until June 2016 by [Mathias
+Lafeldt][twitter]. The library is derived from the [Git project]'s test-lib.sh.
+It is currently maintained by [Christian Couder][chriscool]. See [Github’s
+“contributors” page][contributors] for a list of developers. A complete list of
+authors should include Git contributors to test-lib.sh too.
 
 ## License
 
-Sharness is licensed under the terms of the GNU General Public License version
-2 or higher. See file [COPYING] for full license text.
+sharness is licensed under the terms of the GNU General Public License version
+2 or higher. See file [LICENSE] for full license text.
 
-## Contributing
-
-Contributions are welcome, see file [CONTRIBUTING] for details.
-
-## Authors
-
-Sharness was created in April 2011 and maintained until June 2016 by
-[Mathias Lafeldt][twitter]. The library is derived from the
-[Git project]'s test-lib.sh. It is currently maintained by
-[Christian Couder][chriscool].
-
-See [Github's "contributors" page][contributors] for a list of
-developers.
-
-A complete list of authors should include Git contributors to
-test-lib.sh too.
-
-[API documentation]: https://github.com/chriscool/sharness/blob/master/API.md
 [chriscool]: https://github.com/chriscool
-[CONTRIBUTING]: https://github.com/chriscool/sharness/blob/master/CONTRIBUTING.md
+
 [contributors]: https://github.com/chriscool/sharness/graphs/contributors
-[COPYING]: https://github.com/chriscool/sharness/blob/master/COPYING
-[Git]: http://git-scm.com/
+
+[license]: https://github.com/epiloque/sharness/blob/master/LICENSE
+
+[git]: http://git-scm.com/
+
 [prove(1)]: http://linux.die.net/man/1/prove
-[README.git]: https://github.com/chriscool/sharness/blob/master/README.git
-[Sharness cookbook]: https://github.com/mlafeldt/sharness-cookbook
-[Test Anything Protocol]: http://testanything.org/
+
+[test anything protocol]: http://testanything.org/
+
 [twitter]: https://twitter.com/mlafeldt
