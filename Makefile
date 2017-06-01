@@ -4,7 +4,7 @@ INSTALL_DIR = $(prefix)/share/sharness
 DOC_DIR = $(prefix)/share/doc/sharness
 EXAMPLE_DIR = $(DOC_DIR)/examples
 
-INSTALL_FILES = aggregate-results.sh sharness.sh
+INSTALL_FILES = sharness.sh
 DOC_FILES = API.md CHANGELOG.md COPYING README.git README.md
 EXAMPLE_FILES = test/Makefile test/simple.t
 
@@ -19,7 +19,6 @@ install: all
 	$(INSTALL) -d -m 755 $(INSTALL_DIR) $(DOC_DIR) $(EXAMPLE_DIR)
 	$(INSTALL) -m 644 $(INSTALL_FILES) $(INSTALL_DIR)
 	$(INSTALL) -m 644 $(DOC_FILES) $(DOC_DIR)
-	$(SED) -e "s!aggregate-results.sh!$(INSTALL_DIR)/aggregate-results.sh!" test/Makefile > $(EXAMPLE_DIR)/Makefile
 	$(SED) -e "s!. ./sharness.sh!. $(INSTALL_DIR)/sharness.sh!" test/simple.t > $(EXAMPLE_DIR)/simple.t
 
 uninstall:

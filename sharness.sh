@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
+# shellcheck disable=SC2034
 #
 # Copyright (c) 2011-2012 Mathias Lafeldt
 # Copyright (c) 2005-2012 Git project
@@ -22,7 +23,7 @@ SHARNESS_VERSION="1.0.0"
 export SHARNESS_VERSION
 
 # Public: The file extension for tests.  By default, it is set to "t".
-: ${SHARNESS_TEST_EXTENSION:=t}
+: "${SHARNESS_TEST_EXTENSION:=t}"
 export SHARNESS_TEST_EXTENSION
 
 #  Reset TERM to original terminal if found, otherwise save orignal TERM
@@ -33,7 +34,7 @@ export SHARNESS_TEST_EXTENSION
 export SHARNESS_ORIG_TERM
 
 # Export SHELL_PATH
-: ${SHELL_PATH:=$SHELL}
+: "${SHELL_PATH:=$SHELL}"
 export SHELL_PATH
 
 # For repeatability, reset the environment to a known state.
@@ -137,10 +138,10 @@ say() {
 	say_color info "$*"
 }
 
-test -n "$test_description" || error "Test script did not set test_description."
+test -n "$description" || true
 
 if test "$help" = "t"; then
-	echo "$test_description"
+	echo "Test script did not set description."
 	exit 0
 fi
 
@@ -173,29 +174,29 @@ trap 'die' EXIT
 
 # Public: Define that a test prerequisite is available.
 #
-# The prerequisite can later be checked explicitly using test_have_prereq or
-# implicitly by specifying the prerequisite name in calls to test_expect_success
-# or test_expect_failure.
+# The prerequisite can later be checked explicitly using havePrerequisite or
+# implicitly by specifying the prerequisite name in calls to expectSucess
+# or expectFailure.
 #
 # $1 - Name of prerequiste (a simple word, in all capital letters by convention)
 #
 # Examples
 #
 #   # Set PYTHON prerequisite if interpreter is available.
-#   command -v python >/dev/null && test_set_prereq PYTHON
+#   command -v python >/dev/null && setPrerequisite PYTHON
 #
 #   # Set prerequisite depending on some variable.
-#   test -z "$NO_GETTEXT" && test_set_prereq GETTEXT
+#   test -z "$NO_GETTEXT" && setPrerequisite GETTEXT
 #
 # Returns nothing.
-test_set_prereq() {
+setPrerequisite() {
 	satisfied_prereq="$satisfied_prereq$1 "
 }
 satisfied_prereq=" "
 
 # Public: Check if one or more test prerequisites are defined.
 #
-# The prerequisites must have previously been set with test_set_prereq.
+# The prerequisites must have previously been set with setPrerequisite.
 # The most common use of this is to skip all the tests if some essential
 # prerequisite is missing.
 #
@@ -204,13 +205,13 @@ satisfied_prereq=" "
 # Examples
 #
 #   # Skip all remaining tests if prerequisite is not set.
-#   if ! test_have_prereq PERL; then
-#       skip_all='skipping perl interface tests, perl not available'
-#       test_done
+#   if ! havePrerequisite PERL; then
+#       skipAll='skipping perl interface tests, perl not available'
+#       done
 #   fi
 #
 # Returns 0 if all prerequisites are defined or 1 otherwise.
-test_have_prereq() {
+havePrerequisite() {
 	# prerequisites can be concatenated with ','
 	save_IFS=$IFS
 	IFS=,
@@ -231,7 +232,7 @@ test_have_prereq() {
 			negative_prereq=
 		esac
 
-		total_prereq=$(($total_prereq + 1))
+		total_prereq=$((total_prereq + 1))
 		case "$satisfied_prereq" in
 		*" $prerequisite "*)
 			satisfied_this_prereq=t
@@ -242,7 +243,7 @@ test_have_prereq() {
 
 		case "$satisfied_this_prereq,$negative_prereq" in
 		t,|,t)
-			ok_prereq=$(($ok_prereq + 1))
+			ok_prereq=$((ok_prereq + 1))
 			;;
 		*)
 			# Keep a list of missing prerequisites; restore
@@ -263,12 +264,12 @@ test_have_prereq() {
 # the text_expect_* functions instead.
 
 test_ok_() {
-	test_success=$(($test_success + 1))
+	test_success=$((test_success + 1))
 	say_color "" "ok $test_count - $@"
 }
 
 test_failure_() {
-	test_failure=$(($test_failure + 1))
+	test_failure=$((test_failure + 1))
 	say_color error "not ok $test_count - $1"
 	shift
 	echo "$@" | sed -e 's/^/#	/'
@@ -276,12 +277,12 @@ test_failure_() {
 }
 
 test_known_broken_ok_() {
-	test_fixed=$(($test_fixed + 1))
+	test_fixed=$((test_fixed + 1))
 	say_color error "ok $test_count - $@ # TODO known breakage vanished"
 }
 
 test_known_broken_failure_() {
-	test_broken=$(($test_broken + 1))
+	test_broken=$((test_broken + 1))
 	say_color warn "not ok $test_count - $@ # TODO known breakage"
 }
 
@@ -295,11 +296,11 @@ test_known_broken_failure_() {
 #
 # Examples
 #
-#   test_debug "cat some_log_file"
+#   debug "cat some_log_file"
 #
 # Returns the exit code of the last command executed in debug mode or 0
 #   otherwise.
-test_debug() {
+debug() {
 	test "$debug" = "" || eval "$1"
 }
 
@@ -307,17 +308,17 @@ test_debug() {
 #
 # This is useful for debugging tests and only makes sense together with "-v".
 # Be sure to remove all invocations of this command before submitting.
-test_pause() {
+pause() {
 	if test "$verbose" = t; then
 		"$SHELL_PATH" <&6 >&3 2>&4
 	else
-		error >&5 "test_pause requires --verbose"
+		error >&5 "pause requires --verbose"
 	fi
 }
 
 test_eval_() {
 	# This is a separate function because some tests use
-	# "return" to end a test_expect_success block early.
+	# "return" to end a expectSucess block early.
 	case ",$test_prereq," in
 	*,INTERACTIVE,*)
 		eval "$*"
@@ -351,7 +352,7 @@ test_run_() {
 }
 
 test_skip_() {
-	test_count=$(($test_count + 1))
+	test_count=$((test_count + 1))
 	to_skip=
 	for skp in $SKIP_TESTS; do
 		case $this_test.$test_count in
@@ -360,7 +361,7 @@ test_skip_() {
 			break
 		esac
 	done
-	if test -z "$to_skip" && test -n "$test_prereq" && ! test_have_prereq "$test_prereq"; then
+	if test -z "$to_skip" && test -n "$test_prereq" && ! havePrerequisite "$test_prereq"; then
 		to_skip=t
 	fi
 	case "$to_skip" in
@@ -401,22 +402,22 @@ test_skip_() {
 #
 # Examples
 #
-#   test_expect_success \
+#   expectSucess \
 #       'git-write-tree should be able to write an empty tree.' \
 #       'tree=$(git-write-tree)'
 #
 #   # Test depending on one prerequisite.
-#   test_expect_success TTY 'git --paginate rev-list uses a pager' \
+#   expectSucess TTY 'git --paginate rev-list uses a pager' \
 #       ' ... '
 #
 #   # Multiple prerequisites are separated by a comma.
-#   test_expect_success PERL,PYTHON 'yo dawg' \
+#   expectSucess PERL,PYTHON 'yo dawg' \
 #       ' test $(perl -E 'print eval "1 +" . qx[python -c "print 2"]') == "4" '
 #
 # Returns nothing.
-test_expect_success() {
+expectSucess() {
 	test "$#" = 3 && { test_prereq=$1; shift; } || test_prereq=
-	test "$#" = 2 || error "bug in the test script: not 2 or 3 parameters to test_expect_success"
+	test "$#" = 2 || error "bug in the test script: not 2 or 3 parameters to expectSucess"
 	export test_prereq
 	if ! test_skip_ "$@"; then
 		say >&3 "expecting success: $2"
@@ -432,7 +433,7 @@ test_expect_success() {
 # Public: Run test commands and expect them to fail. Used to demonstrate a known
 # breakage.
 #
-# This is NOT the opposite of test_expect_success, but rather used to mark a
+# This is NOT the opposite of expectSucess, but rather used to mark a
 # test that demonstrates a known breakage.
 #
 # When the test passed, an "ok" message is printed and the number of fixed tests
@@ -453,9 +454,9 @@ test_expect_success() {
 # $3 - Commands to be executed.
 #
 # Returns nothing.
-test_expect_failure() {
+expectFailure() {
 	test "$#" = 3 && { test_prereq=$1; shift; } || test_prereq=
-	test "$#" = 2 || error "bug in the test script: not 2 or 3 parameters to test_expect_failure"
+	test "$#" = 2 || error "bug in the test script: not 2 or 3 parameters to expectFailure"
 	export test_prereq
 	if ! test_skip_ "$@"; then
 		say >&3 "checking known breakage: $2"
@@ -471,37 +472,37 @@ test_expect_failure() {
 # Public: Run command and ensure that it fails in a controlled way.
 #
 # Use it instead of "! <command>". For example, when <command> dies due to a
-# segfault, test_must_fail diagnoses it as an error, while "! <command>" would
+# segfault, mustFail diagnoses it as an error, while "! <command>" would
 # mistakenly be treated as just another expected failure.
 #
-# This is one of the prefix functions to be used inside test_expect_success or
-# test_expect_failure.
+# This is one of the prefix functions to be used inside expectSucess or
+# expectFailure.
 #
 # $1.. - Command to be executed.
 #
 # Examples
 #
-#   test_expect_success 'complain and die' '
+#   expectSucess 'complain and die' '
 #       do something &&
 #       do something else &&
-#       test_must_fail git checkout ../outerspace
+#       mustFail git checkout ../outerspace
 #   '
 #
 # Returns 1 if the command succeeded (exit code 0).
 # Returns 1 if the command died by signal (exit codes 130-192)
 # Returns 1 if the command could not be found (exit code 127).
 # Returns 0 otherwise.
-test_must_fail() {
+mustFail() {
 	"$@"
 	exit_code=$?
 	if test $exit_code = 0; then
-		echo >&2 "test_must_fail: command succeeded: $*"
+		echo >&2 "mustFail: command succeeded: $*"
 		return 1
 	elif test $exit_code -gt 129 -a $exit_code -le 192; then
-		echo >&2 "test_must_fail: died by signal: $*"
+		echo >&2 "mustFail: died by signal: $*"
 		return 1
 	elif test $exit_code = 127; then
-		echo >&2 "test_must_fail: command not found: $*"
+		echo >&2 "mustFail: command not found: $*"
 		return 1
 	fi
 	return 0
@@ -509,32 +510,32 @@ test_must_fail() {
 
 # Public: Run command and ensure that it succeeds or fails in a controlled way.
 #
-# Similar to test_must_fail, but tolerates success too. Use it instead of
+# Similar to mustFail, but tolerates success too. Use it instead of
 # "<command> || :" to catch failures caused by a segfault, for instance.
 #
-# This is one of the prefix functions to be used inside test_expect_success or
-# test_expect_failure.
+# This is one of the prefix functions to be used inside expectSucess or
+# expectFailure.
 #
 # $1.. - Command to be executed.
 #
 # Examples
 #
-#   test_expect_success 'some command works without configuration' '
-#       test_might_fail git config --unset all.configuration &&
+#   expectSucess 'some command works without configuration' '
+#       mightFail git config --unset all.configuration &&
 #       do something
 #   '
 #
 # Returns 1 if the command died by signal (exit codes 130-192)
 # Returns 1 if the command could not be found (exit code 127).
 # Returns 0 otherwise.
-test_might_fail() {
+mightFail() {
 	"$@"
 	exit_code=$?
 	if test $exit_code -gt 129 -a $exit_code -le 192; then
-		echo >&2 "test_might_fail: died by signal: $*"
+		echo >&2 "mightFail: died by signal: $*"
 		return 1
 	elif test $exit_code = 127; then
-		echo >&2 "test_might_fail: command not found: $*"
+		echo >&2 "mightFail: command not found: $*"
 		return 1
 	fi
 	return 0
@@ -542,29 +543,29 @@ test_might_fail() {
 
 # Public: Run command and ensure it exits with a given exit code.
 #
-# This is one of the prefix functions to be used inside test_expect_success or
-# test_expect_failure.
+# This is one of the prefix functions to be used inside expectSucess or
+# expectFailure.
 #
 # $1   - Expected exit code.
 # $2.. - Command to be executed.
 #
 # Examples
 #
-#   test_expect_success 'Merge with d/f conflicts' '
-#       test_expect_code 1 git merge "merge msg" B master
+#   expectSucess 'Merge with d/f conflicts' '
+#       expectCode 1 git merge "merge msg" B master
 #   '
 #
 # Returns 0 if the expected exit code is returned or 1 otherwise.
-test_expect_code() {
+expectCode() {
 	want_code=$1
 	shift
 	"$@"
 	exit_code=$?
-	if test $exit_code = $want_code; then
+	if test "$exit_code" = "$want_code"; then
 		return 0
 	fi
 
-	echo >&2 "test_expect_code: command exited with $exit_code, we wanted $want_code $*"
+	echo >&2 "expectCode: command exited with $exit_code, we wanted $want_code $*"
 	return 1
 }
 
@@ -574,22 +575,22 @@ test_expect_code() {
 # defaults to "diff -u". Only when the test script was started with --verbose,
 # will the command's output, the diff, be printed to the standard output.
 #
-# This is one of the prefix functions to be used inside test_expect_success or
-# test_expect_failure.
+# This is one of the prefix functions to be used inside expectSucess or
+# expectFailure.
 #
 # $1 - Path to file with expected output.
 # $2 - Path to file with actual output.
 #
 # Examples
 #
-#   test_expect_success 'foo works' '
+#   expectSucess 'foo works' '
 #       echo expected >expected &&
 #       foo >actual &&
-#       test_cmp expected actual
+#       compare expected actual
 #   '
 #
 # Returns the exit code of the command set by TEST_CMP.
-test_cmp() {
+compare() {
 	${TEST_CMP:-diff -u} "$@"
 }
 
@@ -603,23 +604,24 @@ test_cmp() {
 #
 # Examples
 #
-#   test_expect_success 'foo works 10 times' '
-#       for i in $(test_seq 1 10)
+#   expectSucess 'foo works 10 times' '
+#       for i in $(sequence 1 10)
 #       do
 #           foo || return
-#       done
+#       finish
 #   '
 #
 # Returns 0 if all the specified numbers can be displayed.
-test_seq() {
-	i="$1"
-	j="$2"
-	while test "$i" -le "$j"
-	do
-		echo "$i" || return
-		i=$(expr "$i" + 1)
-	done
-}
+# sequence() {
+# 	i="$1"
+# 	j="$2"
+# 	while test "$i" -le "$j"
+# 	do
+# 		echo "$i" || return
+# 		# i=$(expr "$i" + 1)
+# 		i=$((i+1))
+# 	done
+# }
 
 # Public: Check if the file expected to be empty is indeed empty, and barfs
 # otherwise.
@@ -627,7 +629,7 @@ test_seq() {
 # $1 - File to check for emptyness.
 #
 # Returns 0 if file is empty, 1 otherwise.
-test_must_be_empty() {
+mustBeEmpty() {
 	if test -s "$1"
 	then
 		echo "'$1' is not empty, it contains:"
@@ -642,21 +644,21 @@ test_must_be_empty() {
 # If some cleanup command fails, the test will not pass. With --immediate, no
 # cleanup is done to help diagnose what went wrong.
 #
-# This is one of the prefix functions to be used inside test_expect_success or
-# test_expect_failure.
+# This is one of the prefix functions to be used inside expectSucess or
+# expectFailure.
 #
 # $1.. - Commands to prepend to the list of cleanup commands.
 #
 # Examples
 #
-#   test_expect_success 'test core.capslock' '
+#   expectSucess 'test core.capslock' '
 #       git config core.capslock true &&
-#       test_when_finished "git config --unset core.capslock" &&
+#       whenFinished "git config --unset core.capslock" &&
 #       do_something
 #   '
 #
 # Returns the exit code of the last cleanup command executed.
-test_when_finished() {
+whenFinished() {
 	test_cleanup="{ $*
 		} && (exit \"\$eval_ret\"); eval_ret=\$?; $test_cleanup"
 }
@@ -665,17 +667,17 @@ test_when_finished() {
 # have run.
 #
 # This can be used to clean up things like test databases. It is not needed to
-# clean up temporary files, as test_done already does that.
+# clean up temporary files, as done already does that.
 #
 # Examples:
 #
 #   cleanup mysql -e "DROP DATABASE mytest"
 #
 # Returns the exit code of the last cleanup command executed.
-final_cleanup=
+cleanup=
 cleanup() {
-	final_cleanup="{ $*
-		} && (exit \"\$eval_ret\"); eval_ret=\$?; $final_cleanup"
+	cleanup="{ $*
+		} && (exit \"\$eval_ret\"); eval_ret=\$?; $cleanup"
 }
 
 # Public: Summarize test results and exit with an appropriate error code.
@@ -683,28 +685,33 @@ cleanup() {
 # Must be called at the end of each test script.
 #
 # Can also be used to stop tests early and skip all remaining tests. For this,
-# set skip_all to a string explaining why the tests were skipped before calling
-# test_done.
+# set skipAll to a string explaining why the tests were skipped before calling
+# finish.
 #
 # Examples
 #
-#   # Each test script must call test_done at the end.
-#   test_done
+#   # Each test script must call done at the end.
+#   done
 #
 #   # Skip all remaining tests if prerequisite is not set.
-#   if ! test_have_prereq PERL; then
-#       skip_all='skipping perl interface tests, perl not available'
-#       test_done
+#   if ! havePrerequisite PERL; then
+#       skipAll='skipping perl interface tests, perl not available'
+#       done
 #   fi
 #
 # Returns 0 if all tests passed or 1 if there was a failure.
-test_done() {
+finish() {
 	EXIT_OK=t
 
 	if test -z "$HARNESS_ACTIVE"; then
 		test_results_dir="$SHARNESS_TEST_DIRECTORY/test-results"
 		mkdir -p "$test_results_dir"
 		test_results_path="$test_results_dir/$this_test.$$.counts"
+
+		if [ ! -z "${SHARNESS_RESULT}" ]
+		then
+			test_results_path="$SHARNESS_RESULT"
+		fi
 
 		cat >>"$test_results_path" <<-EOF
 		total $test_count
@@ -723,7 +730,7 @@ test_done() {
 		say_color warn "# still have $test_broken known breakage(s)"
 	fi
 	if test "$test_broken" != 0 || test "$test_fixed" != 0; then
-		test_remaining=$(( $test_count - $test_broken - $test_fixed ))
+		test_remaining=$(( test_count - test_broken - test_fixed ))
 		msg="remaining $test_remaining test(s)"
 	else
 		test_remaining=$test_count
@@ -733,17 +740,17 @@ test_done() {
 	case "$test_failure" in
 	0)
 		# Maybe print SKIP message
-		if test -n "$skip_all" && test $test_count -gt 0; then
-			error "Can't use skip_all after running some tests"
+		if test -n "$skipAll" && test $test_count -gt 0; then
+			error "Can't use skipAll after running some tests"
 		fi
-		[ -z "$skip_all" ] || skip_all=" # SKIP $skip_all"
+		[ -z "$skipAll" ] || skipAll=" # SKIP $skipAll"
 
 		if test $test_remaining -gt 0; then
 			say_color pass "# passed all $msg"
 		fi
-		say "1..$test_count$skip_all"
+		say "1..$test_count$skipAll"
 
-		test_eval_ "$final_cleanup"
+		test_eval_ "$cleanup"
 
 		test -d "$remove_trash" &&
 		cd "$(dirname "$remove_trash")" &&
@@ -762,18 +769,18 @@ test_done() {
 
 # Public: Root directory containing tests. Tests can override this variable,
 # e.g. for testing Sharness itself.
-: ${SHARNESS_TEST_DIRECTORY:=$(pwd)}
+: "${SHARNESS_TEST_DIRECTORY:=$(pwd)}"
 export SHARNESS_TEST_DIRECTORY
 
 # Public: Source directory of test code and sharness library.
 # This directory may be different from the directory in which tests are
 # being run.
-: ${SHARNESS_TEST_SRCDIR:=$(cd $(dirname $0) && pwd)}
+: "${SHARNESS_TEST_SRCDIR:="$(cd "$(dirname "$0")" && pwd)"}"
 export SHARNESS_TEST_SRCDIR
 
 # Public: Build directory that will be added to PATH. By default, it is set to
 # the parent directory of SHARNESS_TEST_DIRECTORY.
-: ${SHARNESS_BUILD_DIRECTORY:="$SHARNESS_TEST_DIRECTORY/.."}
+: "${SHARNESS_BUILD_DIRECTORY:="$SHARNESS_TEST_DIRECTORY/.."}"
 PATH="$SHARNESS_BUILD_DIRECTORY:$PATH"
 export PATH SHARNESS_BUILD_DIRECTORY
 
@@ -837,13 +844,13 @@ for skp in $SKIP_TESTS; do
 	case "$this_test" in
 	$skp)
 		say_color info >&3 "skipping test $this_test altogether"
-		skip_all="skip all tests in $this_test"
-		test_done
+		skipAll="skip all tests in $this_test"
+		finish
 	esac
 done
 
-test -n "$TEST_LONG" && test_set_prereq EXPENSIVE
-test -n "$TEST_INTERACTIVE" && test_set_prereq INTERACTIVE
+test -n "$TEST_LONG" && setPrerequisite EXPENSIVE
+test -n "$TEST_INTERACTIVE" && setPrerequisite INTERACTIVE
 
 # Make sure this script ends with code 0
 :

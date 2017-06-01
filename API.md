@@ -1,349 +1,300 @@
-# Sharness API
+`SHARNESS_VERSION`
+------------------
 
-### SHARNESS_VERSION
+Public: Current version of Sharness.
 
-    Public: Current version of Sharness.
 
-### SHARNESS_TEST_EXTENSION
+`SHARNESS_ORIG_TERM`
+--------------------
 
-    Public: The file extension for tests.  By default, it is set to "t".
+Public: The unsanitized TERM under which sharness is originally run
 
-### SHARNESS_ORIG_TERM
 
-    Public: The unsanitized TERM under which sharness is originally run
+`setPrerequisite()`
+-------------------
 
-### test_set_prereq()
+Public: Define that a test prerequisite is available.
 
-    Public: Define that a test prerequisite is available.
+The prerequisite can later be checked explicitly using havePrerequisite or implicitly by specifying the prerequisite name in calls to expectSucess or expectFailure.
 
-    The prerequisite can later be checked explicitly using test_have_prereq or
-    implicitly by specifying the prerequisite name in calls to test_expect_success
-    or test_expect_failure.
+* $1 - Name of prerequiste (a simple word, in all capital letters by convention)
 
-    $1 - Name of prerequiste (a simple word, in all capital letters by convention)
+Examples
 
-    Examples
+    # Set PYTHON prerequisite if interpreter is available.
+    command -v python >/dev/null && setPrerequisite PYTHON
 
-      # Set PYTHON prerequisite if interpreter is available.
-      command -v python >/dev/null && test_set_prereq PYTHON
+    # Set prerequisite depending on some variable.
+    test -z "$NO_GETTEXT" && setPrerequisite GETTEXT
 
-      # Set prerequisite depending on some variable.
-      test -z "$NO_GETTEXT" && test_set_prereq GETTEXT
+Returns nothing.
 
-    Returns nothing.
 
-### test_have_prereq()
+`havePrerequisite()`
+--------------------
 
-    Public: Check if one or more test prerequisites are defined.
+Public: Check if one or more test prerequisites are defined.
 
-    The prerequisites must have previously been set with test_set_prereq.
-    The most common use of this is to skip all the tests if some essential
-    prerequisite is missing.
+The prerequisites must have previously been set with setPrerequisite. The most common use of this is to skip all the tests if some essential prerequisite is missing.
 
-    $1 - Comma-separated list of test prerequisites.
+* $1 - Comma-separated list of test prerequisites.
 
-    Examples
+Examples
 
-      # Skip all remaining tests if prerequisite is not set.
-      if ! test_have_prereq PERL; then
-          skip_all='skipping perl interface tests, perl not available'
-          test_done
-      fi
+    # Skip all remaining tests if prerequisite is not set.
+    if ! havePrerequisite PERL; then
+        skipAll='skipping perl interface tests, perl not available'
+        done
+    fi
 
-    Returns 0 if all prerequisites are defined or 1 otherwise.
+Returns 0 if all prerequisites are defined or 1 otherwise.
 
-### test_debug()
 
-    Public: Execute commands in debug mode.
+`debug()`
+---------
 
-    Takes a single argument and evaluates it only when the test script is started
-    with --debug. This is primarily meant for use during the development of test
-    scripts.
+Public: Execute commands in debug mode.
 
-    $1 - Commands to be executed.
+Takes a single argument and evaluates it only when the test script is started with --debug. This is primarily meant for use during the development of test scripts.
 
-    Examples
+* $1 - Commands to be executed.
 
-      test_debug "cat some_log_file"
+Examples
 
-    Returns the exit code of the last command executed in debug mode or 0
-      otherwise.
+    debug "cat some_log_file"
 
-### test_pause()
+Returns the exit code of the last command executed in debug mode or 0    otherwise.
 
-    Public: Stop execution and start a shell.
 
-    This is useful for debugging tests and only makes sense together with "-v".
-    Be sure to remove all invocations of this command before submitting.
+`pause()`
+---------
 
-### test_expect_success()
+Public: Stop execution and start a shell.
 
-    Public: Run test commands and expect them to succeed.
+This is useful for debugging tests and only makes sense together with "-v". Be sure to remove all invocations of this command before submitting.
 
-    When the test passed, an "ok" message is printed and the number of successful
-    tests is incremented. When it failed, a "not ok" message is printed and the
-    number of failed tests is incremented.
 
-    With --immediate, exit test immediately upon the first failed test.
+`expectSucess()`
+----------------
 
-    Usually takes two arguments:
-    $1 - Test description
-    $2 - Commands to be executed.
+Public: Run test commands and expect them to succeed.
 
-    With three arguments, the first will be taken to be a prerequisite:
-    $1 - Comma-separated list of test prerequisites. The test will be skipped if
-         not all of the given prerequisites are set. To negate a prerequisite,
-         put a "!" in front of it.
-    $2 - Test description
-    $3 - Commands to be executed.
+When the test passed, an "ok" message is printed and the number of successful tests is incremented. When it failed, a "not ok" message is printed and the number of failed tests is incremented.
 
-    Examples
+With --immediate, exit test immediately upon the first failed test.
 
-      test_expect_success \
-          'git-write-tree should be able to write an empty tree.' \
-          'tree=$(git-write-tree)'
+Usually takes two arguments:
+* $1 - Test description
+* $2 - Commands to be executed.
 
-      # Test depending on one prerequisite.
-      test_expect_success TTY 'git --paginate rev-list uses a pager' \
-          ' ... '
+With three arguments, the first will be taken to be a prerequisite:
+* $1 - Comma-separated list of test prerequisites. The test will be skipped if not all of the given prerequisites are set. To negate a prerequisite, put a "!" in front of it.
+* $2 - Test description
+* $3 - Commands to be executed.
 
-      # Multiple prerequisites are separated by a comma.
-      test_expect_success PERL,PYTHON 'yo dawg' \
-          ' test $(perl -E 'print eval "1 +" . qx[python -c "print 2"]') == "4" '
+Examples
 
-    Returns nothing.
+    expectSucess \
+        'git-write-tree should be able to write an empty tree.' \
+        'tree=$(git-write-tree)'
 
-### test_expect_failure()
+    # Test depending on one prerequisite.
+    expectSucess TTY 'git --paginate rev-list uses a pager' \
+        ' ... '
 
-    Public: Run test commands and expect them to fail. Used to demonstrate a known
-    breakage.
+    # Multiple prerequisites are separated by a comma.
+    expectSucess PERL,PYTHON 'yo dawg' \
+        ' test $(perl -E 'print eval "1 +" . qx[python -c "print 2"]') == "4" '
 
-    This is NOT the opposite of test_expect_success, but rather used to mark a
-    test that demonstrates a known breakage.
+Returns nothing.
 
-    When the test passed, an "ok" message is printed and the number of fixed tests
-    is incremented. When it failed, a "not ok" message is printed and the number
-    of tests still broken is incremented.
 
-    Failures from these tests won't cause --immediate to stop.
+`expectFailure()`
+-----------------
 
-    Usually takes two arguments:
-    $1 - Test description
-    $2 - Commands to be executed.
+Public: Run test commands and expect them to fail. Used to demonstrate a known breakage.
 
-    With three arguments, the first will be taken to be a prerequisite:
-    $1 - Comma-separated list of test prerequisites. The test will be skipped if
-         not all of the given prerequisites are set. To negate a prerequisite,
-         put a "!" in front of it.
-    $2 - Test description
-    $3 - Commands to be executed.
+This is NOT the opposite of expectSucess, but rather used to mark a test that demonstrates a known breakage.
 
-    Returns nothing.
+When the test passed, an "ok" message is printed and the number of fixed tests is incremented. When it failed, a "not ok" message is printed and the number of tests still broken is incremented.
 
-### test_must_fail()
+Failures from these tests won't cause --immediate to stop.
 
-    Public: Run command and ensure that it fails in a controlled way.
+Usually takes two arguments:
+* $1 - Test description
+* $2 - Commands to be executed.
 
-    Use it instead of "! <command>". For example, when <command> dies due to a
-    segfault, test_must_fail diagnoses it as an error, while "! <command>" would
-    mistakenly be treated as just another expected failure.
+With three arguments, the first will be taken to be a prerequisite:
+* $1 - Comma-separated list of test prerequisites. The test will be skipped if not all of the given prerequisites are set. To negate a prerequisite, put a "!" in front of it.
+* $2 - Test description
+* $3 - Commands to be executed.
 
-    This is one of the prefix functions to be used inside test_expect_success or
-    test_expect_failure.
+Returns nothing.
 
-    $1.. - Command to be executed.
 
-    Examples
+`mustFail()`
+------------
 
-      test_expect_success 'complain and die' '
-          do something &&
-          do something else &&
-          test_must_fail git checkout ../outerspace
-      '
+Public: Run command and ensure that it fails in a controlled way.
 
-    Returns 1 if the command succeeded (exit code 0).
-    Returns 1 if the command died by signal (exit codes 130-192)
-    Returns 1 if the command could not be found (exit code 127).
-    Returns 0 otherwise.
+Use it instead of "! <command>". For example, when <command> dies due to a segfault, mustFail diagnoses it as an error, while "! <command>" would mistakenly be treated as just another expected failure.
 
-### test_might_fail()
+This is one of the prefix functions to be used inside expectSucess or expectFailure.
 
-    Public: Run command and ensure that it succeeds or fails in a controlled way.
+* $1.. - Command to be executed.
 
-    Similar to test_must_fail, but tolerates success too. Use it instead of
-    "<command> || :" to catch failures caused by a segfault, for instance.
+Examples
 
-    This is one of the prefix functions to be used inside test_expect_success or
-    test_expect_failure.
+    expectSucess 'complain and die' '
+        do something &&
+        do something else &&
+        mustFail git checkout ../outerspace
+    '
 
-    $1.. - Command to be executed.
+Returns 1 if the command succeeded (exit code 0). Returns 1 if the command died by signal (exit codes 130-192) Returns 1 if the command could not be found (exit code 127). Returns 0 otherwise.
 
-    Examples
 
-      test_expect_success 'some command works without configuration' '
-          test_might_fail git config --unset all.configuration &&
-          do something
-      '
+`mightFail()`
+-------------
 
-    Returns 1 if the command died by signal (exit codes 130-192)
-    Returns 1 if the command could not be found (exit code 127).
-    Returns 0 otherwise.
+Public: Run command and ensure that it succeeds or fails in a controlled way.
 
-### test_expect_code()
+Similar to mustFail, but tolerates success too. Use it instead of "<command> || :" to catch failures caused by a segfault, for instance.
 
-    Public: Run command and ensure it exits with a given exit code.
+This is one of the prefix functions to be used inside expectSucess or expectFailure.
 
-    This is one of the prefix functions to be used inside test_expect_success or
-    test_expect_failure.
+* $1.. - Command to be executed.
 
-    $1   - Expected exit code.
-    $2.. - Command to be executed.
+Examples
 
-    Examples
+    expectSucess 'some command works without configuration' '
+        mightFail git config --unset all.configuration &&
+        do something
+    '
 
-      test_expect_success 'Merge with d/f conflicts' '
-          test_expect_code 1 git merge "merge msg" B master
-      '
+Returns 1 if the command died by signal (exit codes 130-192) Returns 1 if the command could not be found (exit code 127). Returns 0 otherwise.
 
-    Returns 0 if the expected exit code is returned or 1 otherwise.
 
-### test_cmp()
+`expectCode()`
+--------------
 
-    Public: Compare two files to see if expected output matches actual output.
+Public: Run command and ensure it exits with a given exit code.
 
-    The TEST_CMP variable defines the command used for the comparision; it
-    defaults to "diff -u". Only when the test script was started with --verbose,
-    will the command's output, the diff, be printed to the standard output.
+This is one of the prefix functions to be used inside expectSucess or expectFailure.
 
-    This is one of the prefix functions to be used inside test_expect_success or
-    test_expect_failure.
+* $1   - Expected exit code.
+* $2.. - Command to be executed.
 
-    $1 - Path to file with expected output.
-    $2 - Path to file with actual output.
+Examples
 
-    Examples
+    expectSucess 'Merge with d/f conflicts' '
+        expectCode 1 git merge "merge msg" B master
+    '
 
-      test_expect_success 'foo works' '
-          echo expected >expected &&
-          foo >actual &&
-          test_cmp expected actual
-      '
+Returns 0 if the expected exit code is returned or 1 otherwise.
 
-    Returns the exit code of the command set by TEST_CMP.
 
-### test_seq()
+`compare()`
+-----------
 
-    Public: portably print a sequence of numbers.
+Public: Compare two files to see if expected output matches actual output.
 
-    seq is not in POSIX and GNU seq might not be available everywhere,
-    so it is nice to have a seq implementation, even a very simple one.
+The TEST_CMP variable defines the command used for the comparision; it defaults to "diff -u". Only when the test script was started with --verbose, will the command's output, the diff, be printed to the standard output.
 
-    $1 - Starting number.
-    $2 - Ending number.
+This is one of the prefix functions to be used inside expectSucess or expectFailure.
 
-    Examples
+* $1 - Path to file with expected output.
+* $2 - Path to file with actual output.
 
-      test_expect_success 'foo works 10 times' '
-          for i in $(test_seq 1 10)
-          do
-              foo || return
-          done
-      '
+Examples
 
-    Returns 0 if all the specified numbers can be displayed.
+    expectSucess 'foo works' '
+        echo expected >expected &&
+        foo >actual &&
+        compare expected actual
+    '
 
-### test_must_be_empty()
+Returns the exit code of the command set by TEST_CMP.
 
-    Public: Check if the file expected to be empty is indeed empty, and barfs
-    otherwise.
 
-    $1 - File to check for emptyness.
+`mustBeEmpty()`
+---------------
 
-    Returns 0 if file is empty, 1 otherwise.
+Public: Check if the file expected to be empty is indeed empty, and barfs otherwise.
 
-### test_when_finished()
+* $1 - File to check for emptyness.
 
-    Public: Schedule cleanup commands to be run unconditionally at the end of a
-    test.
+Returns 0 if file is empty, 1 otherwise.
 
-    If some cleanup command fails, the test will not pass. With --immediate, no
-    cleanup is done to help diagnose what went wrong.
 
-    This is one of the prefix functions to be used inside test_expect_success or
-    test_expect_failure.
+`whenFinished()`
+----------------
 
-    $1.. - Commands to prepend to the list of cleanup commands.
+Public: Schedule cleanup commands to be run unconditionally at the end of a test.
 
-    Examples
+If some cleanup command fails, the test will not pass. With --immediate, no cleanup is done to help diagnose what went wrong.
 
-      test_expect_success 'test core.capslock' '
-          git config core.capslock true &&
-          test_when_finished "git config --unset core.capslock" &&
-          do_something
-      '
+This is one of the prefix functions to be used inside expectSucess or expectFailure.
 
-    Returns the exit code of the last cleanup command executed.
+* $1.. - Commands to prepend to the list of cleanup commands.
 
-### final_cleanup
+Examples
 
-    Public: Schedule cleanup commands to be run unconditionally when all tests
-    have run.
+    expectSucess 'test core.capslock' '
+        git config core.capslock true &&
+        whenFinished "git config --unset core.capslock" &&
+        do_something
+    '
 
-    This can be used to clean up things like test databases. It is not needed to
-    clean up temporary files, as test_done already does that.
+Returns the exit code of the last cleanup command executed.
 
-    Examples:
 
-      cleanup mysql -e "DROP DATABASE mytest"
+`cleanup`
+---------
 
-    Returns the exit code of the last cleanup command executed.
+Public: Schedule cleanup commands to be run unconditionally when all tests have run.
 
-### test_done()
+This can be used to clean up things like test databases. It is not needed to clean up temporary files, as done already does that.
 
-    Public: Summarize test results and exit with an appropriate error code.
+Examples:
 
-    Must be called at the end of each test script.
+    cleanup mysql -e "DROP DATABASE mytest"
 
-    Can also be used to stop tests early and skip all remaining tests. For this,
-    set skip_all to a string explaining why the tests were skipped before calling
-    test_done.
+Returns the exit code of the last cleanup command executed.
 
-    Examples
 
-      # Each test script must call test_done at the end.
-      test_done
+`finish()`
+----------
 
-      # Skip all remaining tests if prerequisite is not set.
-      if ! test_have_prereq PERL; then
-          skip_all='skipping perl interface tests, perl not available'
-          test_done
-      fi
+Public: Summarize test results and exit with an appropriate error code.
 
-    Returns 0 if all tests passed or 1 if there was a failure.
+Must be called at the end of each test script.
 
-### SHARNESS_TEST_DIRECTORY
+Can also be used to stop tests early and skip all remaining tests. For this, set skipAll to a string explaining why the tests were skipped before calling finish.
 
-    Public: Root directory containing tests. Tests can override this variable,
-    e.g. for testing Sharness itself.
+Examples
 
-### SHARNESS_TEST_SRCDIR
+    # Each test script must call done at the end.
+    done
 
-    Public: Source directory of test code and sharness library.
-    This directory may be different from the directory in which tests are
-    being run.
+    # Skip all remaining tests if prerequisite is not set.
+    if ! havePrerequisite PERL; then
+        skipAll='skipping perl interface tests, perl not available'
+        done
+    fi
 
-### SHARNESS_BUILD_DIRECTORY
+Returns 0 if all tests passed or 1 if there was a failure.
 
-    Public: Build directory that will be added to PATH. By default, it is set to
-    the parent directory of SHARNESS_TEST_DIRECTORY.
 
-### SHARNESS_TEST_FILE
+`SHARNESS_TEST_FILE`
+--------------------
 
-    Public: Path to test script currently executed.
+Public: Path to test script currently executed.
 
-### SHARNESS_TRASH_DIRECTORY
 
-    Public: Empty trash directory, the test area, provided for each test. The HOME
-    variable is set to that directory too.
+`SHARNESS_TRASH_DIRECTORY`
+--------------------------
 
-Generated by tomdoc.sh version 0.1.5
+Public: Empty trash directory, the test area, provided for each test. The HOME variable is set to that directory too.
+
+

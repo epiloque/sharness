@@ -1,14 +1,14 @@
 #!/bin/sh
 
-test_description="Show basic features of Sharness"
+description="Show basic features of Sharness"
 
 . ./sharness.sh
 
-test_expect_success "Success is reported like this" "
+expectSucess "Success is reported like this" "
     echo hello world | grep hello
 "
 
-test_expect_success "Commands are chained this way" "
+expectSucess "Commands are chained this way" "
     test x = 'x' &&
     test 2 -gt 1 &&
     echo success
@@ -19,14 +19,14 @@ return_42() {
     return 42
 }
 
-test_expect_success "You can test for a specific exit code" "
-    test_expect_code 42 return_42
+expectSucess "You can test for a specific exit code" "
+    expectCode 42 return_42
 "
 
-test_expect_failure "We expect this to fail" "
+expectFailure "We expect this to fail" "
     test 1 = 2
 "
 
-test_done
+finish
 
 # vi: set ft=sh :
