@@ -704,13 +704,14 @@ finish() {
 	EXIT_OK=t
 
 	if test -z "$HARNESS_ACTIVE"; then
-		test_results_dir="$SHARNESS_TEST_DIRECTORY/test-results"
-		mkdir -p "$test_results_dir"
-		test_results_path="$test_results_dir/$this_test.$$.counts"
 
 		if [ ! -z "${SHARNESS_RESULT}" ]
 		then
 			test_results_path="$SHARNESS_RESULT"
+		else
+			test_results_dir="$SHARNESS_TEST_DIRECTORY/test-results"
+			mkdir -p "$test_results_dir"
+			test_results_path="$test_results_dir/$this_test.$$.counts"
 		fi
 
 		cat >>"$test_results_path" <<-EOF
@@ -789,19 +790,24 @@ SHARNESS_TEST_FILE="$0"
 export SHARNESS_TEST_FILE
 
 # Prepare test area.
-SHARNESS_TRASH_DIRECTORY="trash directory.$(basename "$SHARNESS_TEST_FILE" ".$SHARNESS_TEST_EXTENSION")"
-test -n "$root" && SHARNESS_TRASH_DIRECTORY="$root/$SHARNESS_TRASH_DIRECTORY"
-case "$SHARNESS_TRASH_DIRECTORY" in
-/*) ;; # absolute path is good
- *) SHARNESS_TRASH_DIRECTORY="$SHARNESS_TEST_DIRECTORY/$SHARNESS_TRASH_DIRECTORY" ;;
-esac
-test "$debug" = "t" || remove_trash="$SHARNESS_TRASH_DIRECTORY"
-rm -rf "$SHARNESS_TRASH_DIRECTORY" || {
-	EXIT_OK=t
-	echo >&5 "FATAL: Cannot prepare test area"
-	exit 1
-}
+if [[ -z "${SHARNESS_TRASH_DIRECTORY}" ]]
+then
+	SHARNESS_TRASH_DIRECTORY="trash directory.$(basename "$SHARNESS_TEST_FILE" ".$SHARNESS_TEST_EXTENSION")"
+	test -n "$root" && SHARNESS_TRASH_DIRECTORY="$root/$SHARNESS_TRASH_DIRECTORY"
 
+	case "$SHARNESS_TRASH_DIRECTORY" in
+		/*) ;; # absolute path is good
+		 *) SHARNESS_TRASH_DIRECTORY="$SHARNESS_TEST_DIRECTORY/$SHARNESS_TRASH_DIRECTORY" ;;
+	esac
+
+	test "$debug" = "t" || remove_trash="$SHARNESS_TRASH_DIRECTORY"
+
+	rm -rf "$SHARNESS_TRASH_DIRECTORY" || {
+		EXIT_OK=t
+		echo >&5 "FATAL: Cannot prepare test area"
+		exit 1
+	}
+fi
 
 #
 #  Load any extensions in $srcdir/sharness.d/*.sh

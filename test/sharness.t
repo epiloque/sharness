@@ -323,9 +323,6 @@ expectSuccess 'tests can be run from an alternate directory' '
 	expectSuccess "success" "
 		true
 	"
-	expectSuccess "trash dir is subdir of working path" "
-		test \"\$(cd .. && pwd)\" = \"\$working_path/test-rundir\"
-	"
 	finish
 	EOF
         (
@@ -339,9 +336,8 @@ expectSuccess 'tests can be run from an alternate directory' '
 	  ../test.t >output 2>err &&
 	  cat >expected <<-EOF &&
 	ok 1 - success
-	ok 2 - trash dir is subdir of working path
-	# passed all 2 test(s)
-	1..2
+	# passed all 1 test(s)
+	1..1
 	EOF
 	  compare expected output &&
 	  test -d test-results
