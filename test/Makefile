@@ -31,7 +31,7 @@ test: pre-clean
 	$(MAKE) aggregate-results-and-cleanup
 
 prove: pre-clean
-	@echo "*** prove ***"; $(PROVE) --exec '$(PROVE_OPTS) $(T) :: $(TEST_OPTS)
+	@echo "*** prove ***"; $(PROVE) --exec bash $(PROVE_OPTS) $(T) :: $(TEST_OPTS)
 	$(MAKE) clean-except-prove-cache
 
 $(T):
