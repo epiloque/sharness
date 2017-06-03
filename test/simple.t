@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 description="Show basic features of Sharness"
 

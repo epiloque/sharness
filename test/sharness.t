@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 #
 # Copyright (c) 2011-2013 Mathias Lafeldt
 # Copyright (c) 2005-2013 Git project
